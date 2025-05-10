@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html lang="en">
+    <head>
+        <title>Student Enrollment Form</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet"
+              href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script
+        src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script
+        src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+            </head>
+    <body>
+        <div class="container">
+            <div class="page-header text-center">
+                <h2>Student Enrollment Form</h2>
+            </div>
+            <form id="studForm" method="post">
+                <div class="form-group">
+                    <span><label for="studRoll">Student Roll No.:</label> <label id="studRollMsg">
+                        </label></span>
+                    <input type="number" class="form-control" name="studRoll" id="studRoll"
+                           placeholder="Enter Student Roll No" onchange='getStud();' required>
+                </div>
+                <div class="form-group">
+                    <label for="studName">Student Full Name:</label>
+                    <input type="text" class="form-control" id="studName"
+                           placeholder="Enter Student Full Name" name="studName">
+                </div>
+                <div class="form-group">
+                    <label for="studClass">Class: </label>
+                    <input type="text" class="form-control" id="studClass"
+                           placeholder="Enter Student Class" name="studClass">
+                </div>
+                <div class="form-group">
+                    <label for="studDOB">Date of Birth: </label>
+                    <input type="text" class="form-control" id="studDOB"
+                           placeholder="Enter Student Date of birth" name="studDOB">
+                </div>
+                <div class="form-group">
+                    <label for="studAdd">Address: </label>
+                    <input type="text" class="form-control" id="studAdd"
+                           placeholder="Enter Student Address" name="studADD">
+                </div>
+                <div class="form-group">
+                    <label for="studEnroll">Enrollment date: </label>
+                    <input type="text" class="form-control" id="studEnroll"
+                           placeholder="Enter Student Enrollment date" name="studEnroll">
+                </div>
+                <div class="form-group text-center">
+                    <button type="button" class="btn btn-primary" id="save" 
+                            onclick="saveStudent();">Save</button>
+                    <button type="button" class="btn btn-primary" id="update" 
+                            onclick="updateData();">Update</button>
+                    <button type="button" class="btn btn-primary" id="reset" 
+                            onclick="resetForm();">Reset</button>
+                </div>
+            </form>
+        </div>
+        <script>
+
+            
+
+            function validateAndGetFormData() {
+                var studRollVar = $("#studRoll").val();
+                if (studRollVar === "") {
+                    alert("Student ID Required Value");
+                    $("#studRoll").focus();
+                    return "";
+                }
+                var studNameVar = $("#studName").val();
+                if (studNameVar === "") {
+                    alert("Student Name is Required Value");
+                    $("#studName").focus();
+                    return "";
+                }
+                var studClassVar = $("#studClass").val();
+                if (studClassVar === "") {
+                    alert("Student class is Required Value");
+                    $("#studClass").focus();
+                    return "";
+                }
+                var studDOBVar = $("#studDOB").val();
+                if (studDOBVar === "") {
+                    alert("Student DOB is Required Value");
+                    $("#studDOB").focus();
+                    return "";
+                }
+                var studAddVar = $("#studAdd").val();
+                if (studAddVar === "") {
+                    alert("Student address is Required Value");
+                    $("#studAdd").focus();
+                    return "";
+                }
+                var studEnrollVar = $("#studEnroll").val();
+                if (studEnrollVar === "") {
+                    alert("Student enrollment date is Required Value");
+                    $("#studEnroll").focus();
+                    return "";
+                }
+                var jsonStrObj = {
+                    studRoll: studRollVar,
+                    studName: studNameVar,
+                    studClass: studClassVar,
+                    studDOB: studDOBVar,
+                    studAdd: studAddVar,
+                    studEnroll: studEnrollVar
+                };
+                return JSON.stringify(jsonStrObj);
+            }
+            function createPUTRequest(connToken, jsonObj, dbName, relName) {
+                var putRequest = "{\n"
+                        + "\"token\" : \""
+                        + connToken
+                        + "\","
+                        + "\"dbName\": \""
+                        + dbName
+                        + "\",\n" + "\"cmd\" : \"PUT\",\n"
+                        + "\"rel\" : \""
+                        + relName + "\","
+                        + "\"jsonStr\": \n"
+                        + jsonObj
+                        + "\n"
+                        + "}";
+                return putRequest;
+            }
+            function executeCommand(reqString, dbBaseUrl, apiEndPointUrl) {
+                var url = dbBaseUrl + apiEndPointUrl;
+                var jsonObj;
+                $.post(url, reqString, function (result) {
+                    jsonObj = JSON.parse(result);
+                }).fail(function (result) {
+                    var dataJsonObj = result.responseText;
+                    jsonObj = JSON.parse(dataJsonObj);
+                });
+                return jsonObj;
+            }
+
+
+            function resetForm() {
+                $("#studRoll").val("");
+                $("#studName").val("");
+                $("#studClass").val("");
+                $("#studDOB").val("");
+                $("#studAdd").val("");
+                $("#studEnroll").val("");
+                $("#studRoll").prop("disabled", false);
+                $("#save").prop("disabled", true);
+                $("#update").prop("disabled", true);
+                $("#reset").prop("disabled", true);
+                $("#studRoll").focus();
+            }
+
+            function saveStudent() {
+                var jsonStr = validateAndGetFormData();
+                if (jsonStr === "") {
+                    return;
+                }
+                var putReqStr = createPUTRequest("90934680|-31949205584748632|90956159",
+                        jsonStr, "STUDENT", "STUD-REL");
+                alert(putReqStr);
+                jQuery.ajaxSetup({async: false});
+                var resultObj = executeCommand(putReqStr, "http://api.login2explore.com:5577", "/api/iml");
+                jQuery.ajaxSetup({async: true});
+
+                alert(JSON.stringify(resultObj));
+
+                resetForm();
+                $("#studRoll").focus();
+            }
+
+            function updateData() {
+                $('#update').prop("disabled", true);
+                jsonChg = validateAndGetFormData();
+                var updateRequest = createUPDATERecordRequest("90934680|-31949205584748632|90956159", jsonChg, "STUDENT", "STUD-REL", localStorage.getItem(key));
+                jQuery.ajaxSetup({async: false});
+                var resJsonObj = executeCommand(updateRequest, "http://api.login2explore.com:5577", "/api/iml");
+                jQuery.ajaxSetup({async: true});
+                console.log(resJsonObj);
+                resetForm();
+                $('#studRoll').focus();
+            }
+
+            function saveRecNo2LS(jsonObj) {
+                var lvData = JSON.parse(jsonObj.data);
+                localStorage.setItem('recno', lvData.rec_no);
+            }
+
+            function getStudRollAsJsonObj() {
+                var studRoll = $('#studRoll').val();
+                var jsonStr = {
+                    id: studRoll
+                };
+                return JSON.stringify(jsonStr);
+            }
+
+            function fillData(jsonObj) {
+                saveRecNo2LS(jsonObj);
+                var record = JSON.parse(jsonObj.data).record;
+                $("#studName").val(record.name);
+                $("#studClass").val(record.class);
+                $("#studDOB").val(record.dob);
+                $("#studAdd").val(record.add);
+                $("#studEnroll").val(record.enroll);
+            }
+
+            function getStud() {
+                var studRollJsonObj = getStudRollAsJsonObj();
+                var getRequest = createGET_BY_KEYRequest("90934680|-31949205584748632|90956159", "STUDENT", "STUD-REL", studRollJsonObj);
+                jQuery.ajaxSetup({async: false});
+                var resJsonObj = executeCommand(getRequest, "https://api.login2explore.com:5577", '/api/irl');
+                jQuery.ajaxSetup({async: true});
+                if (resJsonObj.status === 400) {
+                    $("#save").prop("disabled", false);
+                    $("#reset").prop("disabled", false);
+                    $("#studName").focus();
+
+                } else if (resJsonObj.status === 200) {
+
+                    $("#studRoll").prop("disabled", true);
+                    fillData(resJsonObj);
+
+                    $("#update").prop("disabled", false);
+                    $("#reset").prop("disabled", false);
+                    $("#studName").focus();
+
+                }
+            }
+
+        </script>
+    </body>
+</html>
